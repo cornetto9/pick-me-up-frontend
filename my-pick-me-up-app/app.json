@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "my-pick-me-up-app",
+    "slug": "my-pick-me-up-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "expo-router": {
+        "appRoot": "app"
+      },
+      "API_URL": "https://pick-me-up-a6d73d086e96.herokuapp.com",
+      "GOOGLE_MAPS_API_KEY": "AIzaSyBQvsWO8nr6WXCHY7USt8b1jjY4efrUTZs"
+    }
+  }
+}
