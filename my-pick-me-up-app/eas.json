@@ -1,0 +1,20 @@
+{
+    "build": {
+      "development": {
+        "distribution": "internal",
+        "ios": {
+          "simulator": true
+        },
+        "env": {
+          "API_URL": "https://pick-me-up-a6d73d086e96.herokuapp.com",
+          "GOOGLE_MAPS_API_KEY": "your-google-maps-api-key"
+        }
+      },
+      "production": {
+        "env": {
+          "API_URL": "https://pick-me-up-a6d73d086e96.herokuapp.com",
+          "GOOGLE_MAPS_API_KEY": "your-google-maps-api-key"
+        }
+      }
+    }
+  }
