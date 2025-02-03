@@ -1,110 +1,119 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, Button, TouchableOpacity, FlatList } from 'react-native';
-import 'react-native-get-random-values';
-import { useRouter } from "expo-router";
-import { Ionicons } from '@expo/vector-icons';
+import React, { useState, useEffect } from 'react';
+import { View, Text, FlatList, Image, StyleSheet, ActivityIndicator, Button } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import Constants from 'expo-constants';
 
-const API_URL = Constants.expoConfig.extra.API_URL; 
+const API_URL = Constants.expoConfig.extra.API_URL;
 
-export default function HomeScreen() {
-  const router = useRouter();
+const Home = () => {
   const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigation = useNavigation(); // ✅ Use navigation for buttons
 
   useEffect(() => {
     const fetchItems = async () => {
       try {
         const response = await axios.get(`${API_URL}/items`);
-        console.log('Fetched items:', response.data); // Debugging log
-        setItems(response.data.item); // Access the nested items
+        if (response.data.item && Array.isArray(response.data.item)) {
+          setItems(response.data.item);
+        } else {
+          setItems([]);
+        }
       } catch (error) {
         console.error('Error fetching items:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchItems();
   }, []);
 
-  const renderItem = ({ item }) => {
-    console.log('Rendering item:', item); // Debugging log
+  const handleLogout = () => {
+    // Add your logout logic (e.g., clear token, navigate to login)
+    console.log('User logged out');
+    navigation.replace('login'); // Navigate to login screen
+  };
+
+  const handleCreateItem = () => {
+    navigation.navigate('item'); // Navigate to create item page
+  };
+
+  const renderItem = ({ item }) => (
+    <View style={styles.itemContainer}>
+      <Image source={{ uri: item.image_url }} style={styles.itemImage} />
+      <Text style={styles.itemTitle} numberOfLines={2}>{item.title}</Text>
+    </View>
+  );
+
+  if (loading) {
     return (
-      <View style={styles.itemContainer}>
-        <Text style={styles.itemTitle}>{item.title}</Text>
-        <Text style={styles.itemDetailsText}>Availability: {item.availability ? 'Available' : 'Not Available'}</Text>
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
       </View>
     );
-  };
+  }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Home Page</Text>
-      <Button title="Log out" onPress={() => router.push('/login')} />
-      
+      {/* ✅ Logout and Create Buttons */}
+      <View style={styles.buttonContainer}>
+        <Button title="Logout" onPress={handleLogout} color="red" />
+        <Button title="Post Item" onPress={handleCreateItem} color="green" />
+      </View>
+
       <FlatList
         data={items}
         renderItem={renderItem}
-        keyExtractor={(item) => item.item_id.toString()} // Use item_id as the key
-        contentContainerStyle={styles.listContainer}
+        keyExtractor={(item) => item.item_id.toString()}
+        numColumns={2}
+        columnWrapperStyle={styles.row}
+        contentContainerStyle={styles.listContent}
       />
-
-      <TouchableOpacity
-        style={styles.floatingButton}
-        onPress={() => router.push('/item')}
-      >
-        <Ionicons name="add" size={24} color="white" />
-      </TouchableOpacity>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'black',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
+    backgroundColor: 'white',
+    paddingHorizontal: 10,
+    paddingTop: 10,
   },
-  text: {
-    color: 'white',
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 10,
   },
-  listContainer: {
-    flexGrow: 1,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    paddingTop: 20,
+  listContent: {
+    paddingBottom: 20,
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   itemContainer: {
-    backgroundColor: 'white',
+    width: '48%',
+    marginBottom: 10,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 10,
+    alignItems: 'center',
     padding: 10,
-    marginVertical: 5,
-    borderRadius: 5,
+  },
+  itemImage: {
     width: '100%',
+    height: 120,
+    borderRadius: 10,
+    resizeMode: 'cover',
   },
   itemTitle: {
+    fontSize: 16,
     fontWeight: 'bold',
-    color: 'black', // Ensure the text color is visible
-    fontSize: 16, // Increase font size for better visibility
-  },
-  itemDetailsText: {
-    color: 'gray',
-    fontSize: 14, // Increase font size for better visibility
-  },
-  floatingButton: {
-    position: 'absolute',
-    bottom: 30,
-    right: 30,
-    backgroundColor: '#6200ee',
-    borderRadius: 50,
-    width: 60,
-    height: 60,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 2,
-    elevation: 5,
+    textAlign: 'center',
+    marginTop: 5,
   },
 });
+
+export default Home;
