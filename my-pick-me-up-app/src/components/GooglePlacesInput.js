@@ -1,25 +1,29 @@
 import React from 'react';
-import { Alert } from 'react-native';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import Constants from 'expo-constants';
 
 const GOOGLE_MAPS_API_KEY = Constants.expoConfig.extra.GOOGLE_MAPS_API_KEY;
 
-export default function GooglePlacesInput({ onPress }) {
+const GooglePlacesInput = ({ onAddressSelected }) => {
   return (
     <GooglePlacesAutocomplete
       placeholder="Search for an address"
       fetchDetails={true}
       onPress={(data, details = null) => {
-        console.log("DATA:", data);
-        console.log("DETAILS:", details);
+        if (details && details.geometry) {
+          const { lat, lng } = details.geometry.location;
+          const formattedAddress = data.description || details.formatted_address;
 
-        if (details) {
-          // Alert.alert("Selected Place", JSON.stringify(details, null, 2)); // Show alert to confirm selection
-          onPress(data, details);
+          console.log("✅ Address Selected:", formattedAddress);
+          console.log("✅ Coordinates:", { lat, lng });
+
+          onAddressSelected({
+            address: formattedAddress,
+            latitude: lat.toString(),
+            longitude: lng.toString(),
+          });
         } else {
-          console.log("⚠️ Error: Details not fetched!");
-          Alert.alert("Error", "Details not fetched!"); // Show an alert if details are missing
+          console.warn("⚠️ Error: Details not fetched properly.");
         }
       }}
       query={{
@@ -27,13 +31,36 @@ export default function GooglePlacesInput({ onPress }) {
         language: 'en',
       }}
       styles={{
-        textInputContainer: { width: '100%' },
-        textInput: { height: 38, color: '#5d5d5d', fontSize: 16 },
-        predefinedPlacesDescription: { color: '#1faadb' },
-        listView: { backgroundColor: 'white' },
+        textInputContainer: {
+          backgroundColor: 'transparent',
+          borderTopWidth: 0,
+          borderBottomWidth: 0,
+          width: '100%',
+        },
+        textInput: {
+          height: 40,
+          borderColor: '#ccc',
+          borderWidth: 1,
+          borderRadius: 5,
+          paddingHorizontal: 10,
+          fontSize: 16,
+          backgroundColor: '#fff',
+        },
+        listView: {
+          backgroundColor: '#fff',
+          borderRadius: 5,
+          marginTop: 5,
+          elevation: 3, // Shadow for Android
+          shadowColor: '#000', // Shadow for iOS
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.2,
+          shadowRadius: 2,
+        },
       }}
       enablePoweredByContainer={false}
       currentLocation={false}
     />
   );
-}
+};
+
+export default GooglePlacesInput;

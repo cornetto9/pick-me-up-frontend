@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { View, Button, TextInput, Alert, StyleSheet, Switch, Text, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
-import Constants from 'expo-constants';
-import axios from 'axios';
+import { 
+  View, Button, TextInput, Alert, StyleSheet, Switch, Text, 
+  KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, Image
+} from 'react-native';
 import GooglePlacesInput from '../src/components/GooglePlacesInput';
+import Constants from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import * as ImagePicker from 'expo-image-picker';
 
 const API_URL = Constants.expoConfig.extra.API_URL; 
+const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/dabjvo2wq/image/upload';
+const UPLOAD_PRESET = 'pick_me_up'; 
 
 const Item = () => {
   const [title, setTitle] = useState('');
@@ -14,39 +20,43 @@ const Item = () => {
   const [longitude, setLongitude] = useState('');
   const [isGeneral, setIsGeneral] = useState(true);
   const [availability, setAvailability] = useState(true);
-  const [userId, setUserId] = useState(null); // Ensuring `userId` is null initially
+  const [userId, setUserId] = useState(null); 
+  const [address, setAddress] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
 
-  // Fetch user ID from AsyncStorage after login
   useEffect(() => {
     const fetchUserId = async () => {
       try {
         const storedUserId = await AsyncStorage.getItem('user_id');
         if (storedUserId) {
-          setUserId(parseInt(storedUserId, 10)); // Ensure it's stored as a number
-        } else {
-          console.log("⚠️ No user_id found in AsyncStorage!");
+          setUserId(parseInt(storedUserId, 10));
         }
       } catch (error) {
         console.error("❌ Error fetching user_id from AsyncStorage:", error);
       }
     };
-
     fetchUserId();
   }, []);
+
+  const handleAddressSelect = (selectedLocation) => {
+    console.log("✅ Address Selected:", selectedLocation.address);
+    console.log("✅ Coordinates:", { lat: selectedLocation.latitude, lng: selectedLocation.longitude });
+    setAddress(selectedLocation.address);
+    setLatitude(selectedLocation.latitude);
+    setLongitude(selectedLocation.longitude);
+  };
 
   const handlePostItem = async () => {
     const itemData = {
       title,
       details,
-      image_url: 'https://example.com/static-image.jpg', 
+      image_url: imageUrl, 
       latitude: parseFloat(latitude),
       longitude: parseFloat(longitude),
       is_general: isGeneral,
       availability,
       user_id: userId, 
     };
-
-    console.log('Posting item with data:', itemData);
 
     try {
       const response = await axios.post(`${API_URL}/items`, itemData, {
@@ -66,99 +76,179 @@ const Item = () => {
     }
   };
 
-  const handleAddressSelect = (data, details) => {
-    const { lat, lng } = details.geometry.location;
-    setLatitude(lat.toString());
-    setLongitude(lng.toString());
+  const handleChoosePhoto = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (permissionResult.granted === false) {
+      Alert.alert("Permission to access camera roll is required!");
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      const { uri } = result.assets[0];
+      const formData = new FormData();
+      formData.append('file', {
+        uri,
+        type: 'image/jpeg',
+        name: 'upload.jpg',
+      });
+      formData.append('upload_preset', UPLOAD_PRESET);
+
+      try {
+        const uploadResponse = await axios.post(CLOUDINARY_URL, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        setImageUrl(uploadResponse.data.secure_url);
+        console.log('Image uploaded successfully:', uploadResponse.data.secure_url);
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        Alert.alert('Error', 'An error occurred while uploading the image');
+      }
+    }
   };
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
     >
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Title</Text>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.formContainer}>
+          <Text style={styles.text}>Post an Item</Text>
+
+          {/* ✅ Title Input */}
+          <Text style={styles.label}>Title:</Text>
           <TextInput
             style={styles.input}
-            placeholder="Title"
+            placeholder="Enter title"
             value={title}
             onChangeText={setTitle}
+            placeholderTextColor="#888"
           />
-        </View>
-        
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Details</Text>
+
+          {/* ✅ Details Input */}
+          <Text style={styles.label}>Details:</Text>
           <TextInput
             style={[styles.input, styles.detailsInput]}
-            placeholder="Details"
+            placeholder="Enter details"
             value={details}
             onChangeText={setDetails}
             multiline
+            placeholderTextColor="#888"
           />
+
+          {/* ✅ Category Switch */}
+          <View style={styles.switchContainer}>
+            <Text style={styles.label}>Category</Text>
+            <View style={styles.switchRow}>
+              <Text style={styles.switchLabel}>General</Text>
+              <Switch value={isGeneral} onValueChange={setIsGeneral} />
+            </View>
+          </View>
+
+          {/* ✅ Availability Switch */}
+          <View style={styles.switchContainer}>
+            <Text style={styles.label}>Status</Text>
+            <View style={styles.switchRow}>
+              <Text style={styles.switchLabel}>Available</Text>
+              <Switch value={availability} onValueChange={setAvailability} />
+            </View>
+          </View>
+
+          {/* ✅ Address Input */}
+          <Text style={styles.label}>Address:</Text>
+          <GooglePlacesInput onAddressSelected={handleAddressSelect} />
+          {/* {address ? <Text style={styles.addressText}>📍 {address}</Text> : null} */}
+
+          {/* ✅ Photo Upload */}
+          <Button title="Choose Photo" onPress={handleChoosePhoto} />
+          {imageUrl ? <Image source={{ uri: imageUrl }} style={styles.image} /> : null}
+
+          {/* ✅ Submit Button */}
+          <Button title="Post Item" onPress={handlePostItem} />
         </View>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Address</Text>
-          <GooglePlacesInput key="address" onPress={handleAddressSelect} />
-        </View>
-        <View style={styles.switchContainer}>
-          <Text style={styles.label}>Category</Text>
-          <Switch
-            value={isGeneral}
-            onValueChange={setIsGeneral}
-          />
-        </View>
-        <View style={styles.switchContainer}>
-          <Text style={styles.label}>Status</Text>
-          <Switch
-            value={availability}
-            onValueChange={setAvailability}
-          />
-        </View>
-        <Button title="Post Item" onPress={handlePostItem} />
-      </ScrollView>
+      </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
 };
 
+// ✅ Updated Styles (Light Theme)
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    backgroundColor: 'white', // ✅ White background
+    padding: 20, 
   },
-  scrollContainer: {
-    flexGrow: 1,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
+  formContainer: {
+    flex: 1, 
+    justifyContent: 'center',
   },
-  inputContainer: {
-    width: '100%',
-    marginBottom: 20,
+  text: {
+    color: 'black', // ✅ Black text
+    fontSize: 24,
+    marginBottom: 5,
+    fontWeight: 'bold',
+    alignSelf: 'center',
+  },
+  label: {
+    color: 'black', // ✅ Black labels
+    alignSelf: 'flex-start',
+    marginBottom: 5,
+    fontSize: 15,
   },
   input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    paddingHorizontal: 10,
     width: '100%',
-    fontSize: 18,
+    height: 40,
+    backgroundColor: '#f0f0f0', // ✅ Light gray background for inputs
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    marginBottom: 10,
+    color: 'black', // ✅ Black text inside input
   },
   detailsInput: {
-    height: 80,
+    height: 40,
   },
   switchContainer: {
+    marginBottom: 10,
+    width: '100%',
+  },
+  switchRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 20,
+    width: '100%',
+    backgroundColor: '#f9f9f9', // ✅ Light gray background for switch
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 5,
+  },
+  switchLabel: {
+    fontSize: 16,
+    color: 'black', // ✅ Black text for switches
+  },
+  addressText: {
+    fontSize: 14,
+    color: 'black', // ✅ Black address text
+    marginTop: 5,
+    backgroundColor: '#e0e0e0', // ✅ Light gray background
+    padding: 10,
+    borderRadius: 5,
     width: '100%',
   },
-  label: {
-    fontSize: 18,
-    marginBottom: 5,
-    textAlign: 'left',
+  image: {
     width: '100%',
+    height: 200,
+    marginTop: 10,
+    borderRadius: 5,
   },
 });
 

@@ -12,6 +12,16 @@ export default function UserCreateScreen() {
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [address, setAddress] = useState('');
+  const [latitude, setLatitude] = useState('');
+  const [longitude, setLongitude] = useState('');
+
+  const handleAddressSelect = (selectedLocation) => {
+    console.log("Address selected:", selectedLocation);
+    setAddress(selectedLocation.address);
+    setLatitude(selectedLocation.latitude);
+    setLongitude(selectedLocation.longitude);
+  };
 
   const handleCreateAccount = async () => {
     try {
@@ -44,7 +54,7 @@ export default function UserCreateScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>User Creation Page</Text>
+      <Text style={styles.text}>Create an Account</Text>
       
       <Text style={styles.label}>Email:</Text>
       <TextInput 
@@ -76,7 +86,10 @@ export default function UserCreateScreen() {
       />
 
       <Button title="Create Account" onPress={handleCreateAccount} />
-      <GooglePlacesInput />
+      <Text style={styles.label}>Address:</Text>
+      <GooglePlacesInput onAddressSelected={handleAddressSelect} />
+      {address ? <Text style={styles.addressText}>📍 {address}</Text> : null}
+
       <Button title="Go to Home" onPress={() => router.push('/home')} />
     </View>
   );
@@ -94,6 +107,8 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 24,
     marginBottom: 20,
+    fontWeight: 'bold',
+    alignSelf: 'center',
   },
   label: {
     color: '#fff',
@@ -108,5 +123,9 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     paddingHorizontal: 10,
     marginBottom: 10,
+  },
+  addressText: {
+    marginTop: 8,
+    fontSize: 16,
   },
 });
