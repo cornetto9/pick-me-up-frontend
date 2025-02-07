@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, Image, StyleSheet, ActivityIndicator, Button } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { View, Text, FlatList, Image, StyleSheet, ActivityIndicator, Button, TouchableOpacity } from 'react-native';
+import { useRouter } from 'expo-router'; 
 import axios from 'axios';
 import Constants from 'expo-constants';
 
@@ -9,7 +9,7 @@ const API_URL = Constants.expoConfig.extra.API_URL;
 const Home = () => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const navigation = useNavigation(); // ✅ Use navigation for buttons
+  const router = useRouter(); 
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -30,21 +30,15 @@ const Home = () => {
     fetchItems();
   }, []);
 
-  const handleLogout = () => {
-    // Add your logout logic (e.g., clear token, navigate to login)
-    console.log('User logged out');
-    navigation.replace('login'); // Navigate to login screen
-  };
-
-  const handleCreateItem = () => {
-    navigation.navigate('item'); // Navigate to create item page
+  const handleItemPress = (item) => {
+    router.push({ pathname: '/ItemDetails', params: item }); // ✅ Pass item data
   };
 
   const renderItem = ({ item }) => (
-    <View style={styles.itemContainer}>
+    <TouchableOpacity onPress={() => handleItemPress(item)} style={styles.itemContainer}>
       <Image source={{ uri: item.image_url }} style={styles.itemImage} />
       <Text style={styles.itemTitle} numberOfLines={2}>{item.title}</Text>
-    </View>
+    </TouchableOpacity>
   );
 
   if (loading) {
@@ -57,11 +51,11 @@ const Home = () => {
 
   return (
     <View style={styles.container}>
-      {/* ✅ Logout and Create Buttons */}
-      <View style={styles.buttonContainer}>
-        <Button title="Logout" onPress={handleLogout} color="red" />
-        <Button title="Post Item" onPress={handleCreateItem} color="green" />
-      </View>
+      {/* <View style={styles.buttonContainer}>
+        <Button title="Logout" onPress={() => router.replace('/login')} color="red" />
+        <Button title="Create Item" onPress={() => router.push('/createItem')} color="green" />
+        <Button title="Account" onPress={() => router.push('/account')} color="blue" />
+      </View> */}
 
       <FlatList
         data={items}
@@ -78,7 +72,7 @@ const Home = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: 'lightblue',
     paddingHorizontal: 10,
     paddingTop: 10,
   },
@@ -97,7 +91,7 @@ const styles = StyleSheet.create({
   itemContainer: {
     width: '48%',
     marginBottom: 10,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: 'white',
     borderRadius: 10,
     alignItems: 'center',
     padding: 10,

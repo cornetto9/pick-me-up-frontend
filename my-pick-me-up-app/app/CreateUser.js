@@ -26,7 +26,7 @@ export default function UserCreateScreen() {
   const handleCreateAccount = async () => {
     try {
       console.log('Creating account with:', { email, username, password }); // Debugging log
-      const response = await axios.post(`${API_URL}/users`, {
+      const response = await axios.post(`${API_URL}/register`, {
         email,
         username,
         password,
@@ -86,11 +86,11 @@ export default function UserCreateScreen() {
       />
 
       <Button title="Create Account" onPress={handleCreateAccount} />
-      <Text style={styles.label}>Address:</Text>
+      {/* <Text style={styles.label}>Address:</Text>
       <GooglePlacesInput onAddressSelected={handleAddressSelect} />
-      {address ? <Text style={styles.addressText}>📍 {address}</Text> : null}
+      {address ? <Text style={styles.addressText}>📍 {address}</Text> : null} */}
 
-      <Button title="Go to Home" onPress={() => router.push('/home')} />
+      {/* <Button title="Go to Home" onPress={() => router.push('/Home')} /> */}
     </View>
   );
 }
@@ -98,23 +98,24 @@ export default function UserCreateScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'black',
+    backgroundColor: 'lightblue',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
   },
   text: {
-    color: 'white',
+    color: 'black',
     fontSize: 24,
     marginBottom: 20,
     fontWeight: 'bold',
     alignSelf: 'center',
   },
   label: {
-    color: '#fff',
+    color: 'black',
     alignSelf: 'flex-start',
     marginBottom: 5,
-    fontSize: 15,
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   input: {
     width: '100%',
@@ -123,6 +124,8 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     paddingHorizontal: 10,
     marginBottom: 10,
+    borderColor: 'gray',
+    borderWidth: 1,
   },
   addressText: {
     marginTop: 8,
