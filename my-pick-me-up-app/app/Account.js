@@ -9,6 +9,7 @@ import Constants from "expo-constants";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { MaterialIcons } from '@expo/vector-icons';
 
+
 const API_URL = Constants.expoConfig.extra.API_URL;
 
 const Account = () => {
@@ -26,24 +27,27 @@ const Account = () => {
           Alert.alert("Error", "User not logged in.");
           return;
         }
-
+  
         const userId = parseInt(storedUserId, 10);
         console.log(`🛠️ Fetching data for user ID: ${userId}`);
-
+  
         const userResponse = await axios.get(`${API_URL}/users/${userId}`);
         console.log("✅ User data:", userResponse.data);
         setUser(userResponse.data.user);
-
+  
         const itemsResponse = await axios.get(`${API_URL}/items/user/${userId}`);
         console.log("✅ Items data:", itemsResponse.data);
-
+  
+        let items = [];
         if (Array.isArray(itemsResponse.data)) {
-          setItems(itemsResponse.data);
+          items = itemsResponse.data;
         } else if (Array.isArray(itemsResponse.data.items)) {
-          setItems(itemsResponse.data.items);
-        } else {
-          setItems([]); // Ensure fallback for unexpected API response
+          items = itemsResponse.data.items;
         }
+  
+        // Sort items from latest to oldest based on created_at timestamp
+        const sortedItems = items.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        setItems(sortedItems);
       } catch (error) {
         console.error("❌ Error fetching user data:", error);
         Alert.alert("Error", "Failed to load user data.");
@@ -51,7 +55,7 @@ const Account = () => {
         setLoading(false);
       }
     };
-
+  
     fetchUserData();
   }, []);
 
@@ -122,7 +126,7 @@ const Account = () => {
       <View style={styles.header}>
         {/* ✅ My Info Button at the Top Left */}
         <TouchableOpacity onPress={() => router.push('/UserInfo')} style={styles.infoButton}>
-          <MaterialIcons name="info" size={24} color="white" />
+          <MaterialIcons name="person" size={24} color="white" />
           <Text style={styles.infoText}>My Info</Text>
         </TouchableOpacity>
 
@@ -178,7 +182,7 @@ const Account = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "lightblue",
+    backgroundColor: "#F5F7FA",
     padding: 20,
     paddingBottom: 10, // ✅ Prevents content from being hidden behind the bottom nav
   },
@@ -191,7 +195,7 @@ const styles = StyleSheet.create({
   infoButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#4CAF50",
+    backgroundColor: "#6C9BCF",
     padding: 5,
     borderRadius: 5,
   },

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Text, View, TextInput, Button, StyleSheet, Alert } from 'react-native';
+import { Text, View, TextInput, Button, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import axios from 'axios';
 import Constants from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import styles from '../src/styles'; // Import global styles
 
 const API_URL = Constants.expoConfig.extra.API_URL;
 
@@ -57,8 +58,9 @@ const Login = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Pick me Up</Text>
+      <Text style={styles.title}>Pick Me Up</Text>
 
+      <Text style={styles.label}>Email:</Text>
       <TextInput
         style={styles.input}
         placeholder="Email"
@@ -66,52 +68,30 @@ const Login = () => {
         onChangeText={setEmail}
         keyboardType="email-address"
         autoCapitalize="none"
-        autoComplete="email"
       />
 
+      <Text style={styles.label}>Password:</Text>
       <TextInput
         style={styles.input}
         placeholder="Password"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
-        autoComplete="password"
       />
 
-      <Button title="Login" onPress={handleLogin} />
+      <TouchableOpacity style={styles.button} onPress={handleLogin}>
+        <Text style={styles.buttonText}>Login</Text>
+      </TouchableOpacity>
 
-      <Button title="Sign up" onPress={() => router.push("/CreateUser")} />
+      {/* sign up button */}
+      <TouchableOpacity 
+        style={[styles.button, { backgroundColor: '#2C3E50', marginTop: 10 }]} 
+        onPress={() => router.push('/CreateUser')}
+      >
+        <Text style={styles.buttonText}>Sign Up</Text>
+      </TouchableOpacity>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 20,
-    backgroundColor: 'lightblue',
-  },
-  input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    marginBottom: 10,
-    paddingHorizontal: 10,
-    marginLeft: 10,
-    marginRight: 10,
-    marginTop: 10,
-    borderRadius: 5,
-    backgroundColor: '#f0f0f0',
-  },
-  text: {
-    fontSize: 30,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 50,
-    textShadowColor: 'blue',
-    color: 'green',
-  },
-});
 
 export default Login;

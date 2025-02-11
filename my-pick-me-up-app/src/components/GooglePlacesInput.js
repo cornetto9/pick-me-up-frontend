@@ -9,6 +9,7 @@ const GooglePlacesInput = ({ onAddressSelected }) => {
     <GooglePlacesAutocomplete
       placeholder="Search for an address"
       fetchDetails={true}
+      // placeholderTextColor="#888"
       onPress={(data, details = null) => {
         if (details && details.geometry) {
           const { lat, lng } = details.geometry.location;
@@ -26,6 +27,7 @@ const GooglePlacesInput = ({ onAddressSelected }) => {
           console.warn("⚠️ Error: Details not fetched properly.");
         }
       }}
+      placeholderTextColor="#888"
       query={{
         key: GOOGLE_MAPS_API_KEY,
         language: 'en',
@@ -35,18 +37,19 @@ const GooglePlacesInput = ({ onAddressSelected }) => {
           backgroundColor: 'transparent',
           borderTopWidth: 0,
           borderBottomWidth: 0,
-          width: '98%',
-          marginLeft: 5,
+          width: '100%',
+          // marginLeft: 5,
           height: 40,
         },
         textInput: {
           height: 40,
           borderColor: '#ccc',
           borderWidth: 1,
-          borderRadius: 5,
+          borderRadius: 8,
           paddingHorizontal: 10,
-          fontSize: 14,
-          backgroundColor: '#fff',
+          backgroundColor: '#f0f0f0',
+          fontSize: 16,
+          marginBottom: 10,
         },
         listView: {
           maxHeight: 150,  // ✅ Limit dropdown height (so it doesn't take too much space)
@@ -57,6 +60,7 @@ const GooglePlacesInput = ({ onAddressSelected }) => {
           shadowOffset: { width: 0, height: 2 },
           shadowOpacity: 0.2,
           shadowRadius: 2,
+          
         },
         
       }}
